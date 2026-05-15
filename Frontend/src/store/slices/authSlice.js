@@ -1,8 +1,28 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const user = JSON.parse(localStorage.getItem('user'));
-const token = localStorage.getItem('token');
+const getStoredAuth = () => {
+  if (typeof window === 'undefined') {
+    return { user: null, token: null };
+  }
+
+  try {
+    const rawUser = localStorage.getItem('user');
+    const parsedUser = rawUser ? JSON.parse(rawUser) : null;
+    const parsedToken = localStorage.getItem('token');
+    return { user: parsedUser, token: parsedToken || null };
+  } catch {
+    try {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    } catch {
+      // Ignore cleanup failure when storage is unavailable.
+    }
+    return { user: null, token: null };
+  }
+};
+
+const { user, token } = getStoredAuth();
 
 const initialState = {
   user: user ? user : null,

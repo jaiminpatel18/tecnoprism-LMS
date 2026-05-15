@@ -1,32 +1,44 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import axios from 'axios';
 import { io } from 'socket.io-client';
-import { FiSend, FiArrowLeft, FiUsers, FiVideo, FiClock } from 'react-icons/fi';
+import { format } from 'date-fns';
+import { FiArrowLeft, FiClock, FiExternalLink, FiSend, FiUsers, FiVideo } from 'react-icons/fi';
+import Layout from '../components/Layout';
+import { EmptyState, SurfaceCard } from '../components/UiPrimitives';
+import { API_URL, authConfig } from '../utils/api';
 
 function LiveSessionRoom() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { token, user } = useSelector((state) => state.auth);
-  
+
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const { data } = await axios.get(`${API_URL}/api/sessions`, authConfig(token));
+        setSession(data.data.find((item) => item._id === id) || null);
+      } catch (error) {
+        console.error('Error fetching session', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchSession();
-    // Initialize socket
-    socketRef.current = io('http://localhost:5000');
-    
-    // Join a specific room based on session ID
+  }, [id, token]);
+
+  useEffect(() => {
+    socketRef.current = io(API_URL);
     socketRef.current.emit('join_session', id);
-    
-    // Listen for incoming messages
     socketRef.current.on('receive_message', (messageData) => {
       setMessages((prev) => [...prev, messageData]);
     });
@@ -37,172 +49,147 @@ function LiveSessionRoom() {
   }, [id]);
 
   useEffect(() => {
-    // Scroll to bottom whenever messages update
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const fetchSession = async () => {
-    try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      // Taking a shortcut by filtering since we don't have a unique getSession endpoint written yet
-      const { data } = await axios.get('http://localhost:5000/api/sessions', config);
-      const matchedSession = data.data.find(s => s._id === id);
-      setSession(matchedSession);
-    } catch (error) {
-      console.error('Error fetching session details:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const sendMessage = (e) => {
     e.preventDefault();
-    if (newMessage.trim() === '') return;
+    if (!newMessage.trim()) {
+      return;
+    }
 
-    const messageData = {
+    const payload = {
       sessionId: id,
       text: newMessage,
       user: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName
+        _id: user?._id,
+        firstName: user?.firstName,
+        lastName: user?.lastName,
       },
-      time: new Date().toISOString()
+      time: new Date().toISOString(),
     };
 
-    // Emit message to server
-    socketRef.current.emit('send_message', messageData);
+    socketRef.current.emit('send_message', payload);
     setNewMessage('');
   };
 
+  const roomStatus = useMemo(() => (session?.status === 'Live' ? 'Live now' : 'Upcoming room'), [session?.status]);
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
+      <Layout title="Expert Session Room" subtitle="Loading live room experience.">
+        <div className="premium-card h-80 animate-pulse rounded-2xl bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800" />
+      </Layout>
     );
   }
 
   if (!session) {
     return (
-      <div className="p-6 max-w-7xl mx-auto h-screen">
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg shadow">Session not found</div>
-        <button onClick={() => navigate('/sessions')} className="mt-4 text-primary font-medium hover:underline">
-          &larr; Back to Sessions
-        </button>
-      </div>
+      <Layout title="Expert Session Room" subtitle="This session could not be found.">
+        <EmptyState
+          icon={FiVideo}
+          title="Session not found"
+          description="This room may have ended or you may not have access yet."
+        />
+      </Layout>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Main Content Area (Video Info / Player) */}
-      <div className="flex-1 flex flex-col h-full bg-white shadow-lg z-10 overflow-y-auto">
-        <div className="p-4 border-b border-gray-100 flex items-center shadow-sm">
-          <button onClick={() => navigate('/sessions')} className="mr-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition">
-            <FiArrowLeft className="text-gray-600" />
+    <Layout title={session.title} subtitle={`Room status: ${roomStatus}`}>
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.8fr_1fr]">
+        <SurfaceCard className="rounded-2xl p-5">
+          <button
+            type="button"
+            onClick={() => navigate('/sessions')}
+            className="mb-4 inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm text-indigo-700 dark:bg-slate-800 dark:text-indigo-300"
+          >
+            <FiArrowLeft /> Back to sessions
           </button>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">{session.title}</h1>
-            <div className="flex items-center text-sm text-gray-500 mt-1">
-              <span className={`inline-block w-2 h-2 rounded-full mr-2 ${session.status === 'Live' ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`}></span>
-              {session.status}
+
+          <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-900 p-8 text-white">
+            <p className="text-xs uppercase tracking-[0.2em] text-indigo-200">Live session environment</p>
+            <h2 className="mt-2 text-2xl font-semibold">{session.title}</h2>
+            <p className="mt-2 max-w-2xl text-sm text-indigo-100">{session.description}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-xs">
+              <span className="rounded-full bg-white/15 px-3 py-1">
+                <FiUsers className="mr-1 inline" /> {session.attendees?.length || 0} participants
+              </span>
+              <span className="rounded-full bg-white/15 px-3 py-1">
+                <FiClock className="mr-1 inline" /> {session.durationMinutes} mins
+              </span>
+              <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-emerald-200">
+                {format(new Date(session.scheduledAt), 'EEE, MMM d • h:mm a')}
+              </span>
             </div>
-          </div>
-        </div>
 
-        <div className="p-6 lg:p-12 flex-1 flex flex-col">
-          <div className="bg-black text-white aspect-video w-full rounded-2xl flex flex-col items-center justify-center shadow-2xl relative">
-             <FiVideo className="text-6xl text-gray-500 mb-4 opacity-50" />
-             <h2 className="text-2xl font-bold mb-2 text-center">Session is external</h2>
-             <p className="text-gray-400 mb-6 text-center max-w-md">
-               This interactive session happens externally on {session.meetingLink.includes('zoom.us') ? 'Zoom' : 'Google Meet'}. 
-             </p>
-             <a 
-               href={session.meetingLink}
-               target="_blank"
-               rel="noopener noreferrer"
-               className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-lg font-bold transition-transform hover:scale-105"
-             >
-               Launch Externally
-             </a>
-          </div>
-
-          <div className="mt-8 bg-gray-50 p-6 rounded-xl border border-gray-100">
-            <h3 className="font-bold text-lg text-gray-900 mb-2">About this Session</h3>
-            <p className="text-gray-600">{session.description}</p>
-            <div className="flex space-x-6 mt-6 pt-6 border-t border-gray-200">
-              <div className="flex items-center text-gray-700">
-                <FiUsers className="mr-2 text-secondary" /> {session.attendees.length} Attendees
-              </div>
-              <div className="flex items-center text-gray-700">
-                <FiClock className="mr-2 text-secondary" /> {session.durationMinutes} min
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Real-time Chat Sidebar */}
-      <div className="w-96 bg-gray-50 border-l border-gray-200 flex flex-col h-full shrink-0">
-        <div className="p-4 border-b border-gray-200 bg-white">
-          <h2 className="font-bold text-gray-800 flex items-center">
-            Live Discussion
-            <span className="ml-2 bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full text-xs">
-              {messages.length}
-            </span>
-          </h2>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 ? (
-            <div className="text-center text-gray-500 mt-10">
-              No messages yet. Be the first to start the discussion!
-            </div>
-          ) : (
-            messages.map((msg, index) => {
-              const isMe = msg.user._id === user._id;
-              return (
-                <div key={index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                  <span className="text-xs text-gray-500 mb-1">
-                    {isMe ? 'You' : `${msg.user.firstName} ${msg.user.lastName}`}
-                  </span>
-                  <div 
-                    className={`px-4 py-2 rounded-2xl max-w-[80%] ${
-                      isMe 
-                        ? 'bg-primary text-white rounded-tr-none' 
-                        : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                </div>
-              );
-            })
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        <div className="p-4 bg-white border-t border-gray-200">
-          <form onSubmit={sendMessage} className="flex space-x-2">
-            <input 
-              type="text" 
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Ask a question..." 
-              className="flex-1 border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-primary focus:border-primary border outline-none"
-            />
-            <button 
-              type="submit"
-              disabled={!newMessage.trim()}
-              className="bg-primary hover:bg-primary-dark text-white rounded-lg p-2.5 transition-colors disabled:opacity-50"
+            <a
+              href={session.meetingLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="focus-ring mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-indigo-700"
             >
-              <FiSend />
-            </button>
+              Launch external meeting <FiExternalLink />
+            </a>
+          </div>
+        </SurfaceCard>
+
+        <SurfaceCard className="flex h-[70vh] flex-col rounded-2xl p-0">
+          <div className="border-b border-indigo-100/70 px-4 py-3 dark:border-slate-700">
+            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Live Discussion</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Collaborative Q&A and peer exchange</p>
+          </div>
+
+          <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+            {messages.length === 0 ? (
+              <p className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                No messages yet. Start the conversation.
+              </p>
+            ) : (
+              messages.map((msg, index) => {
+                const mine = msg.user?._id === user?._id;
+                return (
+                  <div key={`${msg.time}-${index}`} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+                        mine
+                          ? 'rounded-tr-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
+                          : 'rounded-tl-sm bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                      }`}
+                    >
+                      <p className="text-[11px] opacity-80">
+                        {mine ? 'You' : `${msg.user?.firstName || ''} ${msg.user?.lastName || ''}`.trim()}
+                      </p>
+                      <p>{msg.text}</p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <form onSubmit={sendMessage} className="border-t border-indigo-100/70 p-3 dark:border-slate-700">
+            <div className="flex items-center gap-2 rounded-xl border border-indigo-200/70 bg-white/80 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/80">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Ask a question..."
+                className="focus-ring w-full bg-transparent text-sm text-slate-800 outline-none dark:text-slate-100"
+              />
+              <button
+                type="submit"
+                className="focus-ring rounded-lg bg-indigo-500 p-2 text-white transition hover:bg-indigo-600 disabled:opacity-60"
+                disabled={!newMessage.trim()}
+              >
+                <FiSend />
+              </button>
+            </div>
           </form>
-        </div>
+        </SurfaceCard>
       </div>
-    </div>
+    </Layout>
   );
 }
 

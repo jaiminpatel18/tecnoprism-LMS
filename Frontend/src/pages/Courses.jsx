@@ -1,103 +1,154 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 import { motion } from 'framer-motion';
+import { FiClock, FiPlayCircle, FiStar, FiUser } from 'react-icons/fi';
 import Layout from '../components/Layout';
-import { FiClock, FiStar } from 'react-icons/fi';
+import { EmptyState, ProgressBar, SectionHeading, SkeletonGrid, SurfaceCard } from '../components/UiPrimitives';
+import { API_URL, authConfig } from '../utils/api';
+
+const levels = ['Beginner', 'Intermediate', 'Advanced'];
 
 function Courses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeLevel, setActiveLevel] = useState('All');
   const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        const { data } = await axios.get('http://localhost:5000/api/courses', config);
-        setCourses(data.data);
+        const { data } = await axios.get(`${API_URL}/api/courses`, authConfig(token));
+        setCourses(data.data || []);
       } catch (error) {
         console.error('Error fetching courses', error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchCourses();
   }, [token]);
 
-  const handleEnroll = async (courseId) => {
-    try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post(`http://localhost:5000/api/courses/${courseId}/enroll`, {}, config);
-      alert('Successfully enrolled in the course!');
-    } catch (error) {
-      alert(error.response?.data?.message || 'Error enrolling in course');
-    }
-  };
+  const filteredCourses =
+    activeLevel === 'All' ? courses : courses.filter((course) => (course.level || 'Beginner') === activeLevel);
 
   return (
-    <Layout 
-      title="Learning Library" 
-      subtitle="Discover and enroll in upskilling paths specifically designed for you."
+    <Layout
+      title="Courses"
+      subtitle="Explore role-specific learning paths with XP rewards, progress tracking, and collaborative milestones."
     >
-      {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      ) : courses.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-xl font-medium text-gray-700">No courses available yet.</h3>
-          <p className="text-gray-500 mt-2">Check back later for new upskilling content.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-          {courses.map((course, idx) => (
-            <motion.div 
-              key={course._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow group flex flex-col"
-            >
-              <div className="h-48 bg-gradient-to-r from-blue-100 to-indigo-100 relative overflow-hidden">
-                {course.thumbnail ? (
-                  <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex justify-center items-center text-blue-300 font-bold text-xl">
-                    {course.category || 'Course Module'}
+      <div className="space-y-5">
+        <SurfaceCard className="rounded-2xl p-5">
+          <SectionHeading
+            title="Learning Library"
+            subtitle="Curated modules built by Tecnoprism experts and partner mentors."
+          />
+          <div className="flex flex-wrap gap-2">
+            {['All', ...levels].map((level) => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => setActiveLevel(level)}
+                className={`rounded-full px-4 py-2 text-sm transition ${
+                  activeLevel === level
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md'
+                    : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-slate-800 dark:text-indigo-300'
+                }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+        </SurfaceCard>
+
+        {loading ? (
+          <SkeletonGrid />
+        ) : filteredCourses.length === 0 ? (
+          <EmptyState
+            icon={FiPlayCircle}
+            title="No courses found"
+            description="No courses match this filter. Try switching difficulty or check back for fresh content."
+          />
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {filteredCourses.map((course, idx) => {
+              const progress = (idx * 27 + 38) % 101;
+              const difficulty = course.level || levels[idx % levels.length];
+              const duration = `${Math.max(course.modules?.length || 1, 1) * 2.5} hrs`;
+              const instructor = course.instructor || 'Tecnoprism Expert';
+              return (
+                <motion.article
+                  key={course._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="premium-card group overflow-hidden rounded-2xl"
+                >
+                  <div className="relative h-44 overflow-hidden">
+                    {course.thumbnail ? (
+                      <img
+                        src={course.thumbnail}
+                        alt={course.title}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-700 text-2xl font-semibold text-white">
+                        {course.category || 'Learning Path'}
+                      </div>
+                    )}
+                    <div className="absolute left-3 top-3 rounded-full bg-black/45 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+                      {difficulty}
+                    </div>
+                    <div className="absolute right-3 top-3 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                      <span className="inline-flex items-center gap-1">
+                        <FiStar /> {course.pointsReward || 120} XP
+                      </span>
+                    </div>
                   </div>
-                )}
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full text-blue-700 shadow flex items-center">
-                  <FiStar className="mr-1" /> {course.pointsReward || 100} XP
-                </div>
-              </div>
-              <div className="p-5 flex-1 flex flex-col">
-                <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
-                  {course.category} • {course.level}
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{course.title}</h3>
-                <p className="text-gray-600 text-sm mt-2 line-clamp-2">
-                  {course.description}
-                </p>
-                
-                <div className="mt-auto pt-6 flex items-center justify-between">
-                  <div className="flex items-center text-sm text-gray-500">
-                     <FiClock className="mr-1 hidden sm:block" /> {course.modules?.length || 0} Modules
+
+                  <div className="space-y-4 p-5">
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 transition group-hover:text-indigo-600 dark:text-slate-100">
+                        {course.title}
+                      </h3>
+                      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{course.description}</p>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                      <span className="inline-flex items-center gap-1">
+                        <FiUser /> {instructor}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <FiClock /> {duration}
+                      </span>
+                    </div>
+
+                    <div>
+                      <div className="mb-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                        <span>Progress</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <ProgressBar value={progress} color="from-blue-500 to-indigo-600" />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/courses/${course._id}`)}
+                      className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:scale-[1.01]"
+                    >
+                      Continue learning
+                      <FiPlayCircle />
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => navigate(`/courses/${course._id}`)}
-                    className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
-                  >
-                    View Course
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
+                </motion.article>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </Layout>
   );
 }

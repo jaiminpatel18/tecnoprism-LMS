@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import axios from 'axios';
 import { motion } from 'framer-motion';
-import Layout from '../components/Layout';
-import { FiBookOpen, FiClock, FiHeart, FiMessageSquare, FiUser } from 'react-icons/fi';
 import { format } from 'date-fns';
+import { FiBookmark, FiBookOpen, FiHeart, FiMessageSquare, FiTrendingUp, FiUser } from 'react-icons/fi';
+import Layout from '../components/Layout';
+import { EmptyState, SectionHeading, SkeletonGrid, SurfaceCard } from '../components/UiPrimitives';
+import { API_URL, authConfig } from '../utils/api';
 
 function KnowledgeBase() {
   const [blogs, setBlogs] = useState([]);
@@ -12,129 +15,159 @@ function KnowledgeBase() {
   const { token, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const { data } = await axios.get(`${API_URL}/api/blogs`, authConfig(token));
+        setBlogs(data.data || []);
+      } catch (error) {
+        console.error('Error fetching blogs', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchBlogs();
   }, [token]);
 
-  const fetchBlogs = async () => {
-    try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/blogs', config);
-      setBlogs(data.data);
-    } catch (error) {
-      console.error('Error fetching blogs:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const trending = useMemo(() => blogs.slice(0, 3), [blogs]);
 
   const handleLike = async (blogId) => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post(`http://localhost:5000/api/blogs/${blogId}/like`, {}, config);
-      
-      // Toggle locally to save a fetch
-      setBlogs(blogs.map(blog => {
-        if (blog._id === blogId) {
-          const liked = blog.likes.includes(user._id);
-          const newLikes = liked 
-            ? blog.likes.filter(id => id !== user._id)
-            : [...blog.likes, user._id];
-          return { ...blog, likes: newLikes };
-        }
-        return blog;
-      }));
+      await axios.post(`${API_URL}/api/blogs/${blogId}/like`, {}, authConfig(token));
+      setBlogs((prev) =>
+        prev.map((blog) => {
+          if (blog._id !== blogId) {
+            return blog;
+          }
+          const liked = blog.likes?.includes(user?._id);
+          const likes = liked
+            ? blog.likes.filter((item) => item !== user?._id)
+            : [...(blog.likes || []), user?._id];
+          return { ...blog, likes };
+        }),
+      );
     } catch (error) {
-      console.error('Error liking blog:', error);
+      console.error('Error liking blog', error);
     }
   };
 
   return (
-    <Layout 
-      title="Knowledge Base" 
-      subtitle="Read articles, tutorials, and company updates shared by your peers."
-    >
-      {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      ) : blogs.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-          <FiBookOpen className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-          <h3 className="text-xl font-medium text-gray-700">No articles available</h3>
-          <p className="text-gray-500 mt-2">Become the first to share knowledge with the team!</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-          {blogs.map((blog, idx) => {
-             const isLiked = user && blog.likes.includes(user._id);
-             return (
-              <motion.div 
-                key={blog._id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.1 }}
-                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all flex flex-col"
-              >
-                <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
+    <Layout title="Blogs & Knowledge Base" subtitle="Read, react, and share practical insights from across the organization.">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[2fr_1fr]">
+        <section className="space-y-4">
+          {loading ? (
+            <SkeletonGrid />
+          ) : blogs.length === 0 ? (
+            <EmptyState
+              icon={FiBookOpen}
+              title="No blogs published yet"
+              description="Start sharing insights with the team and build internal knowledge momentum."
+            />
+          ) : (
+            blogs.map((blog, idx) => {
+              const liked = blog.likes?.includes(user?._id);
+              return (
+                <motion.article
+                  key={blog._id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="premium-card overflow-hidden rounded-2xl"
+                >
                   {blog.coverImage ? (
-                    <img src={blog.coverImage} alt={blog.title} className="w-full h-full object-cover" />
+                    <img src={blog.coverImage} alt={blog.title} className="h-52 w-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex justify-center items-center text-gray-400 font-bold overflow-hidden">
-                      <FiBookOpen className="w-16 h-16 opacity-30" />
-                    </div>
+                    <div className="h-52 bg-gradient-to-r from-indigo-600 to-blue-600" />
                   )}
-                  <div className="absolute top-4 left-4 flex gap-2">
-                    {blog.tags?.slice(0,2).map(tag => (
-                      <span key={tag} className="bg-white/90 backdrop-blur text-xs font-semibold px-2 py-1 rounded-md text-gray-800 shadow-sm">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 hover:text-primary transition-colors cursor-pointer line-clamp-2">
-                    {blog.title}
-                  </h3>
-                  
-                  <div className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {/* Render raw text for simplicity right now */}
-                    {blog.content}
-                  </div>
-                  
-                  <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-sm">
-                    <div className="flex items-center space-x-2 text-gray-600">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden">
-                        {blog.author?.profilePicture ? (
-                          <img src={blog.author.profilePicture} alt="author" className="w-full h-full object-cover" />
-                        ) : (
-                          blog.author?.firstName?.charAt(0) || <FiUser />
-                        )}
+
+                  <div className="space-y-4 p-5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {(blog.tags || ['Engineering', 'Product']).slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 dark:bg-slate-800 dark:text-indigo-300"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <Link to={`/blogs/${blog._id}`} className="block text-xl font-semibold text-slate-900 hover:text-indigo-600 dark:text-slate-100">
+                      {blog.title}
+                    </Link>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{blog.content}</p>
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-indigo-100/70 pt-4 dark:border-slate-700">
+                      <div className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-slate-800 dark:text-indigo-300">
+                          {blog.author?.firstName?.charAt(0) || <FiUser />}
+                        </span>
+                        <span>
+                          {blog.author?.firstName} {blog.author?.lastName}
+                        </span>
                       </div>
-                      <span className="font-medium truncate max-w-[100px]">
-                        {blog.author?.firstName} {blog.author?.lastName}
-                      </span>
-                    </div>
-                    <div className="flex space-x-4">
-                      <button 
-                        onClick={() => handleLike(blog._id)} 
-                        className={`flex items-center space-x-1 transition-colors ${isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
-                      >
-                        <FiHeart className={isLiked ? 'fill-current' : ''} /> 
-                        <span>{blog.likes.length}</span>
-                      </button>
-                      <button className="flex items-center space-x-1 text-gray-400 hover:text-primary transition-colors">
-                        <FiMessageSquare /> 
-                        <span>{blog.comments?.length || 0}</span>
-                      </button>
+                      <div className="flex items-center gap-3 text-sm">
+                        <button
+                          type="button"
+                          onClick={() => handleLike(blog._id)}
+                          className={`inline-flex items-center gap-1 transition ${liked ? 'text-rose-500' : 'text-slate-500 hover:text-rose-500'}`}
+                        >
+                          <FiHeart className={liked ? 'fill-current' : ''} /> {blog.likes?.length || 0}
+                        </button>
+                        <button type="button" className="inline-flex items-center gap-1 text-slate-500 hover:text-indigo-600">
+                          <FiMessageSquare /> {blog.comments?.length || 0}
+                        </button>
+                        <button type="button" className="inline-flex items-center gap-1 text-slate-500 hover:text-indigo-600">
+                          <FiBookmark />
+                        </button>
+                      </div>
                     </div>
                   </div>
+                </motion.article>
+              );
+            })
+          )}
+        </section>
+
+        <aside className="space-y-4">
+          <SurfaceCard className="rounded-2xl p-5">
+            <SectionHeading title="Trending Today" subtitle="Most engaged reads this week." />
+            <div className="space-y-3">
+              {trending.map((blog) => (
+                <Link key={blog._id} to={`/blogs/${blog._id}`} className="block rounded-xl bg-slate-50 p-3 transition hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-slate-700">
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{blog.title}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {format(new Date(blog.createdAt || Date.now()), 'MMM d')} • {(blog.likes?.length || 0) + 10} reactions
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </SurfaceCard>
+
+          <SurfaceCard className="rounded-2xl p-5">
+            <SectionHeading title="Creator Leaderboard" />
+            <div className="space-y-2">
+              {[
+                { name: 'Ava Shah', posts: 14 },
+                { name: 'Rohan Mehta', posts: 11 },
+                { name: 'Meera Patel', posts: 9 },
+              ].map((creator, idx) => (
+                <div
+                  key={creator.name}
+                  className="flex items-center justify-between rounded-xl border border-indigo-100/70 px-3 py-2 text-sm dark:border-slate-700"
+                >
+                  <p className="font-medium text-slate-800 dark:text-slate-100">
+                    #{idx + 1} {creator.name}
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300">
+                    <FiTrendingUp /> {creator.posts}
+                  </span>
                 </div>
-              </motion.div>
-             );
-          })}
-        </div>
-      )}
+              ))}
+            </div>
+          </SurfaceCard>
+        </aside>
+      </div>
     </Layout>
   );
 }
