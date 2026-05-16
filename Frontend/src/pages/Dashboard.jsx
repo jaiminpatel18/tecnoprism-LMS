@@ -8,15 +8,15 @@ import {
   FiCalendar,
   FiChevronRight,
   FiClock,
-  FiFlame,
   FiStar,
+  FiZap,
 } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { ProgressBar, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
 
 const stats = [
   { label: 'XP Points', value: '2,480', icon: FiStar, tint: 'from-indigo-500 to-purple-600' },
-  { label: 'Learning Streak', value: '14 days', icon: FiFlame, tint: 'from-orange-500 to-amber-500' },
+  { label: 'Learning Streak', value: '14 days', icon: FiZap, tint: 'from-orange-500 to-amber-500' },
   { label: 'Courses Completed', value: '11', icon: FiBookOpen, tint: 'from-emerald-500 to-teal-500' },
   { label: 'Leaderboard Rank', value: '#4', icon: FiAward, tint: 'from-blue-500 to-cyan-500' },
 ];
@@ -51,7 +51,7 @@ function Dashboard() {
               Continue Learning <FiChevronRight />
             </Link>
             <div className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2 text-sm">
-              <FiFlame className="streak-flame text-orange-300" /> Daily streak multiplier x1.5
+              <FiZap className="streak-flame text-orange-300" /> Daily streak multiplier x1.5
             </div>
           </div>
         </SurfaceCard>

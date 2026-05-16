@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { FiAward, FiFilter, FiFlame, FiTrendingUp } from 'react-icons/fi';
+import { FiAward, FiFilter, FiTrendingUp, FiZap } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { EmptyState, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
 import { API_URL, authConfig } from '../utils/api';
@@ -137,7 +137,7 @@ function Leaderboard() {
                     <div className="text-right">
                       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{leader.xpPoints} XP</p>
                       <p className="inline-flex items-center gap-1 text-xs text-orange-500">
-                        <FiFlame /> {leader.currentStreak || 0} day streak
+                        <FiZap /> {leader.currentStreak || 0} day streak
                       </p>
                     </div>
                   </motion.div>

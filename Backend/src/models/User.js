@@ -1,6 +1,28 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
+const enrolledCourseSchema = new mongoose.Schema({
+  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+  progress: { type: Number, default: 0, min: 0, max: 100 },
+  completedLessons: [{ type: String }],
+  lastAccessedLesson: {
+    moduleId: { type: String },
+    lessonId: { type: String },
+    updatedAt: { type: Date },
+  },
+  isCompleted: { type: Boolean, default: false },
+  enrolledAt: { type: Date, default: Date.now },
+  completedAt: { type: Date },
+  certificateId: { type: String },
+});
+
+const certificateSchema = new mongoose.Schema({
+  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+  title: { type: String, required: true },
+  certificateId: { type: String, required: true },
+  issuedAt: { type: Date, default: Date.now },
+});
+
 const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true, trim: true },
   lastName: { type: String, required: true, trim: true },
@@ -32,16 +54,13 @@ const userSchema = new mongoose.Schema({
   lastActive: { type: Date, default: Date.now },
   
   // Progress Tracking
-  enrolledCourses: [{
-    course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
-    progress: { type: Number, default: 0 }, // percentage
-    enrolledAt: { type: Date, default: Date.now }
-  }],
+  enrolledCourses: [enrolledCourseSchema],
   completedCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
   badges: [{
     badge: { type: mongoose.Schema.Types.ObjectId, ref: 'Badge' },
     earnedAt: { type: Date, default: Date.now }
   }],
+  certificates: [certificateSchema],
 }, { timestamps: true });
 
 // Hash password before saving

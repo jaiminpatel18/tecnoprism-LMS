@@ -73,8 +73,10 @@ app.use('/api/blogs', blogRoutes);
 // Gamification & Leaderboard Routes
 const gamificationRoutes = require('./routes/gamificationRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

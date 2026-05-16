@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { FiAward, FiBarChart2, FiBookOpen, FiCheckCircle, FiFlame, FiStar } from 'react-icons/fi';
+import { FiAward, FiBarChart2, FiBookOpen, FiCheckCircle, FiStar, FiZap } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { ProgressBar, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
 
@@ -45,7 +45,7 @@ function Profile() {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 { label: 'Completed Courses', value: '11', icon: FiBookOpen },
-                { label: 'Current Streak', value: '14 days', icon: FiFlame },
+                { label: 'Current Streak', value: '14 days', icon: FiZap },
                 { label: 'Certificates', value: '6', icon: FiAward },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-xl border border-indigo-100/70 p-3 dark:border-slate-700">
