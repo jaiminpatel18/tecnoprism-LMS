@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { FiAward, FiFilter, FiTrendingUp, FiZap } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { EmptyState, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
+import LeaderboardSkeleton from '../components/skeletons/LeaderboardSkeleton';
 import { API_URL, authConfig } from '../utils/api';
 
 const medalStyles = ['from-yellow-400 to-amber-600', 'from-slate-300 to-slate-500', 'from-amber-700 to-orange-700'];
@@ -64,9 +65,7 @@ function Leaderboard() {
         </SurfaceCard>
 
         {loading ? (
-          <SurfaceCard className="rounded-2xl p-10 text-center">
-            <p className="text-slate-500 dark:text-slate-400">Loading leaderboard...</p>
-          </SurfaceCard>
+          <LeaderboardSkeleton />
         ) : filteredLeaders.length === 0 ? (
           <EmptyState
             icon={FiAward}

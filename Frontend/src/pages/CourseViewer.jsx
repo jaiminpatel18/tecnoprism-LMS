@@ -5,6 +5,7 @@ import axios from 'axios';
 import { FiArrowLeft, FiAward, FiCheckCircle, FiLock, FiPlayCircle } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { EmptyState, ProgressBar, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
+import { SkeletonBlock, SkeletonLine } from '../components/skeletons/SkeletonBase';
 import { API_URL, authConfig } from '../utils/api';
 
 const findLessonIndex = (course, moduleId, lessonId) => {
@@ -176,7 +177,34 @@ function CourseViewer() {
   if (loading) {
     return (
       <Layout title="Course Experience" subtitle="Preparing your learning environment.">
-        <div className="premium-card h-80 animate-pulse rounded-2xl bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800" />
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[2fr_1fr]">
+          <div className="space-y-5">
+            <div className="premium-card rounded-3xl p-6">
+              <SkeletonLine className="h-4 w-32" />
+              <SkeletonLine className="mt-4 h-6 w-2/3" />
+              <SkeletonLine className="mt-3 h-4 w-3/4" />
+              <div className="mt-5 flex flex-wrap gap-2">
+                {[...Array(4)].map((_, idx) => (
+                  <SkeletonBlock key={idx} className="h-7 w-24 rounded-full" />
+                ))}
+              </div>
+              <SkeletonBlock className="mt-6 h-10 w-36 rounded-xl" />
+            </div>
+            <div className="premium-card rounded-2xl p-5">
+              <SkeletonLine className="h-4 w-32" />
+              <SkeletonBlock className="mt-4 h-3 w-full rounded-full" />
+              <SkeletonBlock className="mt-3 h-10 w-full rounded-xl" />
+            </div>
+          </div>
+          <div className="premium-card rounded-2xl p-4">
+            <SkeletonLine className="h-4 w-28" />
+            <div className="mt-4 space-y-3">
+              {[...Array(4)].map((_, idx) => (
+                <SkeletonBlock key={idx} className="h-12 rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </div>
       </Layout>
     );
   }

@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { FiAward, FiDownload, FiShield } from 'react-icons/fi';
 import Layout from '../components/Layout';
-import { EmptyState, SectionHeading, SkeletonGrid, SurfaceCard } from '../components/UiPrimitives';
+import { EmptyState, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
+import CertificateSkeleton from '../components/skeletons/CertificateSkeleton';
 import { API_URL, authConfig } from '../utils/api';
 
 function Certificates() {
@@ -30,7 +31,11 @@ function Certificates() {
   if (loading) {
     return (
       <Layout title="Certificates" subtitle="Loading your achievements...">
-        <SkeletonGrid />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {[...Array(6)].map((_, idx) => (
+            <CertificateSkeleton key={idx} />
+          ))}
+        </div>
       </Layout>
     );
   }

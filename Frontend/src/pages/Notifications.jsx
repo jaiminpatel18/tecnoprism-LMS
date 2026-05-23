@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { FiAlertCircle, FiBell, FiCheckCircle, FiMessageSquare, FiStar, FiBookOpen } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { SectionHeading, SurfaceCard } from '../components/UiPrimitives';
+import NotificationSkeleton from '../components/skeletons/NotificationSkeleton';
 import { API_URL, authConfig } from '../utils/api';
 
 const iconByType = {
@@ -64,7 +65,7 @@ function Notifications() {
         />
         <div className="space-y-3 mt-4">
           {loading ? (
-             <div className="text-center text-slate-500 py-10">Loading notifications...</div>
+             <NotificationSkeleton items={6} />
           ) : notifications.length === 0 ? (
              <div className="text-center text-slate-500 py-10 flex flex-col items-center">
                 <FiCheckCircle className="h-10 w-10 text-emerald-500 mb-3" />
@@ -82,7 +83,7 @@ function Notifications() {
                     <p className={`text-sm ${notification.read ? 'text-slate-600 dark:text-slate-400' : 'font-semibold text-slate-900 dark:text-slate-100'}`}>
                       {notification.title}
                     </p>
-                    <p className="mt-0.5 text-sm text-slate-500">{notification.message}</p>
+                    <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{notification.message}</p>
                     <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
                       {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                     </p>

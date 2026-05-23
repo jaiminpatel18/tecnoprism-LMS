@@ -5,7 +5,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FiClock, FiPlayCircle, FiStar, FiUser } from 'react-icons/fi';
 import Layout from '../components/Layout';
-import { EmptyState, ProgressBar, SectionHeading, SkeletonGrid, SurfaceCard } from '../components/UiPrimitives';
+import { EmptyState, ProgressBar, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
+import CourseCardSkeleton from '../components/skeletons/CourseCardSkeleton';
 import { API_URL, authConfig } from '../utils/api';
 
 const levels = ['Beginner', 'Intermediate', 'Advanced'];
@@ -106,7 +107,11 @@ function Courses() {
         </SurfaceCard>
 
         {loading ? (
-          <SkeletonGrid />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {[...Array(6)].map((_, idx) => (
+              <CourseCardSkeleton key={idx} />
+            ))}
+          </div>
         ) : filteredCourses.length === 0 ? (
           <EmptyState
             icon={FiPlayCircle}

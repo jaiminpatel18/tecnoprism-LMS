@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { EmptyState, SurfaceCard } from '../components/UiPrimitives';
+import { SkeletonBlock, SkeletonLine } from '../components/skeletons/SkeletonBase';
 import { API_URL, authConfig } from '../utils/api';
 
 function LiveSessionRoom() {
@@ -154,7 +155,36 @@ function LiveSessionRoom() {
   if (loading) {
     return (
       <Layout title="Expert Session Room" subtitle="Loading live room experience.">
-        <div className="premium-card h-80 animate-pulse rounded-2xl bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800" />
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.8fr_1fr]">
+          <div className="space-y-5">
+            <div className="premium-card rounded-2xl p-5">
+              <SkeletonLine className="h-4 w-32" />
+              <SkeletonBlock className="mt-4 h-48 rounded-2xl" />
+            </div>
+            <div className="premium-card rounded-2xl p-5">
+              <SkeletonLine className="h-4 w-40" />
+              <div className="mt-4 flex flex-wrap gap-2">
+                {[...Array(3)].map((_, idx) => (
+                  <SkeletonBlock key={idx} className="h-9 w-28 rounded-xl" />
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="space-y-5">
+            <div className="premium-card rounded-2xl p-4">
+              <SkeletonLine className="h-4 w-32" />
+              <div className="mt-4 space-y-3">
+                {[...Array(5)].map((_, idx) => (
+                  <SkeletonBlock key={idx} className="h-10 rounded-xl" />
+                ))}
+              </div>
+            </div>
+            <div className="premium-card rounded-2xl p-5">
+              <SkeletonLine className="h-4 w-28" />
+              <SkeletonBlock className="mt-4 h-24 rounded-xl" />
+            </div>
+          </div>
+        </div>
       </Layout>
     );
   }

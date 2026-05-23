@@ -6,7 +6,9 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { FiBookmark, FiBookOpen, FiHeart, FiMessageSquare, FiTrendingUp, FiUser } from 'react-icons/fi';
 import Layout from '../components/Layout';
-import { EmptyState, SectionHeading, SkeletonGrid, SurfaceCard } from '../components/UiPrimitives';
+import { EmptyState, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
+import BlogSkeleton from '../components/skeletons/BlogSkeleton';
+import { SkeletonBlock, SkeletonLine } from '../components/skeletons/SkeletonBase';
 import { API_URL, authConfig } from '../utils/api';
 
 function KnowledgeBase() {
@@ -56,7 +58,7 @@ function KnowledgeBase() {
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[2fr_1fr]">
         <section className="space-y-4">
           {loading ? (
-            <SkeletonGrid />
+            [...Array(3)].map((_, idx) => <BlogSkeleton key={idx} />)
           ) : blogs.length === 0 ? (
             <EmptyState
               icon={FiBookOpen}
@@ -130,42 +132,69 @@ function KnowledgeBase() {
         </section>
 
         <aside className="space-y-4">
-          <SurfaceCard className="rounded-2xl p-5">
-            <SectionHeading title="Trending Today" subtitle="Most engaged reads this week." />
-            <div className="space-y-3">
-              {trending.map((blog) => (
-                <Link key={blog._id} to={`/blogs/${blog._id}`} className="block rounded-xl bg-slate-50 p-3 transition hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-slate-700">
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{blog.title}</p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    {format(new Date(blog.createdAt || Date.now()), 'MMM d')} • {(blog.likes?.length || 0) + 10} reactions
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </SurfaceCard>
-
-          <SurfaceCard className="rounded-2xl p-5">
-            <SectionHeading title="Creator Leaderboard" />
-            <div className="space-y-2">
-              {[
-                { name: 'Ava Shah', posts: 14 },
-                { name: 'Rohan Mehta', posts: 11 },
-                { name: 'Meera Patel', posts: 9 },
-              ].map((creator, idx) => (
-                <div
-                  key={creator.name}
-                  className="flex items-center justify-between rounded-xl border border-indigo-100/70 px-3 py-2 text-sm dark:border-slate-700"
-                >
-                  <p className="font-medium text-slate-800 dark:text-slate-100">
-                    #{idx + 1} {creator.name}
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300">
-                    <FiTrendingUp /> {creator.posts}
-                  </span>
+          {loading ? (
+            <>
+              <SurfaceCard className="rounded-2xl p-5">
+                <SkeletonLine className="h-4 w-32" />
+                <div className="mt-4 space-y-3">
+                  {[...Array(3)].map((_, idx) => (
+                    <SkeletonBlock key={idx} className="h-12 rounded-xl" />
+                  ))}
                 </div>
-              ))}
-            </div>
-          </SurfaceCard>
+              </SurfaceCard>
+              <SurfaceCard className="rounded-2xl p-5">
+                <SkeletonLine className="h-4 w-36" />
+                <div className="mt-4 space-y-3">
+                  {[...Array(3)].map((_, idx) => (
+                    <SkeletonBlock key={idx} className="h-10 rounded-xl" />
+                  ))}
+                </div>
+              </SurfaceCard>
+            </>
+          ) : (
+            <>
+              <SurfaceCard className="rounded-2xl p-5">
+                <SectionHeading title="Trending Today" subtitle="Most engaged reads this week." />
+                <div className="space-y-3">
+                  {trending.map((blog) => (
+                    <Link
+                      key={blog._id}
+                      to={`/blogs/${blog._id}`}
+                      className="block rounded-xl bg-slate-50 p-3 transition hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-slate-700"
+                    >
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{blog.title}</p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {format(new Date(blog.createdAt || Date.now()), 'MMM d')} • {(blog.likes?.length || 0) + 10} reactions
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </SurfaceCard>
+
+              <SurfaceCard className="rounded-2xl p-5">
+                <SectionHeading title="Creator Leaderboard" />
+                <div className="space-y-2">
+                  {[
+                    { name: 'Ava Shah', posts: 14 },
+                    { name: 'Rohan Mehta', posts: 11 },
+                    { name: 'Meera Patel', posts: 9 },
+                  ].map((creator, idx) => (
+                    <div
+                      key={creator.name}
+                      className="flex items-center justify-between rounded-xl border border-indigo-100/70 px-3 py-2 text-sm dark:border-slate-700"
+                    >
+                      <p className="font-medium text-slate-800 dark:text-slate-100">
+                        #{idx + 1} {creator.name}
+                      </p>
+                      <span className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300">
+                        <FiTrendingUp /> {creator.posts}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </SurfaceCard>
+            </>
+          )}
         </aside>
       </div>
     </Layout>

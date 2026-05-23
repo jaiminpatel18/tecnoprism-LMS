@@ -4,7 +4,8 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { FiAward, FiBarChart2, FiBookOpen, FiCheckCircle, FiStar, FiZap } from 'react-icons/fi';
 import Layout from '../components/Layout';
-import { EmptyState, ProgressBar, SectionHeading, SkeletonGrid, SurfaceCard } from '../components/UiPrimitives';
+import { EmptyState, ProgressBar, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
+import ProfileSkeleton from '../components/skeletons/ProfileSkeleton';
 import { API_URL, authConfig } from '../utils/api';
 
 function Profile() {
@@ -41,7 +42,7 @@ function Profile() {
   if (loading) {
     return (
       <Layout title="Employee Profile" subtitle="Loading your learning identity...">
-        <SkeletonGrid />
+        <ProfileSkeleton />
       </Layout>
     );
   }

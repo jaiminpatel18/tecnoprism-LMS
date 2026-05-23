@@ -6,7 +6,8 @@ import { motion } from 'framer-motion';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { FiCalendar, FiClock, FiPlayCircle, FiStar, FiUser, FiVideo } from 'react-icons/fi';
 import Layout from '../components/Layout';
-import { EmptyState, SectionHeading, SkeletonGrid, SurfaceCard } from '../components/UiPrimitives';
+import { EmptyState, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
+import SessionCardSkeleton from '../components/skeletons/SessionCardSkeleton';
 import { API_URL, authConfig } from '../utils/api';
 
 function LiveSessions() {
@@ -92,7 +93,11 @@ function LiveSessions() {
         </SurfaceCard>
 
         {loading ? (
-          <SkeletonGrid />
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {[...Array(4)].map((_, idx) => (
+              <SessionCardSkeleton key={idx} />
+            ))}
+          </div>
         ) : filteredSessions.length === 0 ? (
             <EmptyState
               icon={FiVideo}

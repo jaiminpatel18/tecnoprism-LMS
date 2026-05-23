@@ -29,7 +29,7 @@ export function SurfaceCard({ className, children, delay = 0 }) {
 
 export function ProgressBar({ value, color = 'from-indigo-500 to-purple-600' }) {
   return (
-    <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700/70">
+    <div className="h-2.5 w-full overflow-hidden rounded-full bg-[color:var(--surface-muted)]">
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${Math.min(value, 100)}%` }}

@@ -10,7 +10,7 @@ function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="focus-ring relative inline-flex h-10 w-20 items-center rounded-full border border-indigo-200/70 bg-white/80 p-1 text-slate-700 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200"
+      className="focus-ring relative inline-flex h-10 w-20 items-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] p-1 text-[color:var(--text)] shadow-sm transition hover:bg-[color:var(--surface-muted)] hover:shadow-md"
       aria-label="Toggle theme"
     >
       <motion.span

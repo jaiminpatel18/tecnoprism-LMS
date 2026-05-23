@@ -45,7 +45,7 @@ function Layout({ children, title, subtitle }) {
               <ThemeToggle />
               <Link
                 to="/notifications"
-                className="focus-ring relative rounded-xl border border-indigo-200/80 bg-white/85 p-2.5 text-slate-700 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                className="focus-ring relative rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-2.5 text-[color:var(--text)] shadow-sm transition hover:bg-[color:var(--surface-muted)] hover:shadow-md"
               >
                 <FiBell className="h-5 w-5" />
                 <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-semibold text-white">
@@ -54,7 +54,7 @@ function Layout({ children, title, subtitle }) {
               </Link>
               <Link
                 to="/profile"
-                className="focus-ring flex items-center gap-3 rounded-xl border border-indigo-200/80 bg-white/85 px-2 py-1.5 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
+                className="focus-ring flex items-center gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-2 py-1.5 shadow-sm transition hover:bg-[color:var(--surface-muted)] hover:shadow-md"
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-semibold text-white">
                   {initials}

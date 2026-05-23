@@ -71,7 +71,7 @@ function Sidebar({ collapsed, onToggle }) {
         <button
           type="button"
           onClick={onToggle}
-          className="focus-ring rounded-lg border border-indigo-200/70 bg-white/75 p-1 text-indigo-600 transition hover:bg-indigo-50 dark:border-slate-700 dark:bg-slate-900 dark:text-indigo-300"
+          className="focus-ring rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-1 text-indigo-600 transition hover:bg-[color:var(--surface-muted)] dark:text-indigo-300"
           aria-label="Toggle sidebar"
         >
           {collapsed ? <FiChevronRight /> : <FiChevronLeft />}
@@ -130,7 +130,7 @@ function Sidebar({ collapsed, onToggle }) {
           );
         })}
 
-        <div className="mt-1 rounded-xl border border-indigo-100/70 bg-white/70 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/70">
+        <div className="mt-1 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-semibold text-white">
               {user?.firstName?.charAt(0) || 'T'}

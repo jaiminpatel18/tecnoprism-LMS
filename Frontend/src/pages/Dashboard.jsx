@@ -13,7 +13,8 @@ import {
   FiZap,
 } from 'react-icons/fi';
 import Layout from '../components/Layout';
-import { EmptyState, ProgressBar, SectionHeading, SkeletonGrid, SurfaceCard } from '../components/UiPrimitives';
+import { EmptyState, ProgressBar, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
+import DashboardSkeleton from '../components/skeletons/DashboardSkeleton';
 import { API_URL, authConfig } from '../utils/api';
 
 function Dashboard() {
@@ -103,7 +104,7 @@ function Dashboard() {
   if (loading) {
     return (
       <Layout title="Learning Dashboard" subtitle="Loading personalized workspace...">
-        <SkeletonGrid />
+        <DashboardSkeleton />
       </Layout>
     );
   }
