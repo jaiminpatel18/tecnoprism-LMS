@@ -14,10 +14,10 @@ router.route('/')
   .get(protect, getCourses)
   .post(protect, authorize('Admin', 'Expert'), createCourse);
 
+router.get('/enrolled/me', protect, getEnrolledCourses);
+
 router.route('/:id')
   .get(protect, getCourseById);
-
-router.get('/enrolled/me', protect, getEnrolledCourses);
 
 router.route('/:id/enroll')
   .post(protect, enrollCourse);

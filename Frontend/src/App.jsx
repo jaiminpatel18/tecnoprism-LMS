@@ -20,6 +20,7 @@ import Settings from './pages/Settings';
 import Games from './pages/Games';
 import Certificates from './pages/Certificates';
 import Community from './pages/Community';
+import CareerPaths from './pages/CareerPaths';
 
 function App() {
   return (
@@ -156,6 +157,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Community />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/career-paths"
+              element={
+                <ProtectedRoute>
+                  <CareerPaths />
                 </ProtectedRoute>
               }
             />

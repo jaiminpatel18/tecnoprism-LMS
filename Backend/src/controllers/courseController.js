@@ -8,13 +8,29 @@ const getCourseLessonIds = (course) =>
 
 const createCourse = async (req, res) => {
   try {
-    const { title, description, thumbnail, category, level, modules, pointsReward } = req.body;
+    const {
+      title,
+      description,
+      thumbnail,
+      category,
+      learningDomain,
+      technologies,
+      careerPaths,
+      estimatedHours,
+      level,
+      modules,
+      pointsReward,
+    } = req.body;
 
     const course = new Course({
       title,
       description,
       thumbnail,
       category,
+      learningDomain,
+      technologies,
+      careerPaths,
+      estimatedHours,
       level,
       modules,
       pointsReward,
@@ -31,8 +47,16 @@ const createCourse = async (req, res) => {
 
 const getCourses = async (req, res) => {
   try {
+    const query = { isPublished: true };
+    if (req.query.learningDomain && req.query.learningDomain !== 'All') {
+      query.learningDomain = req.query.learningDomain;
+    }
+    if (req.query.careerPath && req.query.careerPath !== 'All') {
+      query.careerPaths = req.query.careerPath;
+    }
+
     const [courses, user] = await Promise.all([
-      Course.find({ isPublished: true }).populate('instructor', 'firstName lastName profilePicture'),
+      Course.find(query).populate('instructor', 'firstName lastName profilePicture'),
       User.findById(req.user._id).select('enrolledCourses completedCourses'),
     ]);
 

@@ -52,6 +52,11 @@ const userSchema = new mongoose.Schema({
   currentStreak: { type: Number, default: 0 },
   longestStreak: { type: Number, default: 0 },
   lastActive: { type: Date, default: Date.now },
+  sessionStats: {
+    attended: { type: Number, default: 0 },
+    hosted: { type: Number, default: 0 },
+  },
+  skillFocus: [{ type: String, trim: true }],
   
   // Progress Tracking
   enrolledCourses: [enrolledCourseSchema],

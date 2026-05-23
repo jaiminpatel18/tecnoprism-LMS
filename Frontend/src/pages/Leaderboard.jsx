@@ -19,7 +19,14 @@ function Leaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/api/leaderboard`, authConfig(token));
+        const config = {
+          ...authConfig(token),
+          params: {
+            limit: 50,
+            department,
+          },
+        };
+        const { data } = await axios.get(`${API_URL}/api/leaderboard`, config);
         setLeaders(data.data || []);
       } catch (error) {
         console.error('Error fetching leaderboard', error);
@@ -27,14 +34,11 @@ function Leaderboard() {
         setLoading(false);
       }
     };
+    setLoading(true);
     fetchLeaderboard();
-  }, [token]);
+  }, [token, department]);
 
-  const filteredLeaders = useMemo(
-    () =>
-      department === 'All' ? leaders : leaders.filter((leader) => (leader.department || 'Engineering') === department),
-    [department, leaders],
-  );
+  const filteredLeaders = useMemo(() => leaders, [leaders]);
 
   return (
     <Layout title="Leaderboard" subtitle="Track top performers across XP, consistency, and engagement.">

@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { FiAlertCircle, FiBell, FiCheckCircle, FiMessageSquare, FiStar, FiBookOpen } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { SectionHeading, SurfaceCard } from '../components/UiPrimitives';
+import { API_URL, authConfig } from '../utils/api';
 
 const iconByType = {
   GAMIFICATION: FiStar,
@@ -28,8 +29,7 @@ function Notifications() {
 
   const fetchNotifications = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/notifications', config);
+      const { data } = await axios.get(`${API_URL}/api/notifications`, authConfig(token));
       setNotifications(data.data);
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -40,8 +40,7 @@ function Notifications() {
 
   const markAllRead = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.put('http://localhost:5000/api/notifications/read', {}, config);
+      await axios.put(`${API_URL}/api/notifications/read`, {}, authConfig(token));
       setNotifications(notifications.map(n => ({ ...n, read: true })));
     } catch (error) {
       console.error('Error marking all as read:', error);

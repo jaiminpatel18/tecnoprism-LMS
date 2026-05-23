@@ -79,7 +79,7 @@ const getDashboardSummary = async (req, res) => {
         .select('firstName lastName xpPoints currentStreak role department'),
       Course.find({ isPublished: true, _id: { $nin: enrolledIds } })
         .limit(3)
-        .select('title category level pointsReward thumbnail'),
+        .select('title category learningDomain technologies level pointsReward thumbnail'),
       Notification.find({ user: user._id })
         .sort({ createdAt: -1 })
         .limit(5)
@@ -117,7 +117,7 @@ const getDashboardSummary = async (req, res) => {
         },
         badges: user.badges
           .map((entry) => entry.badge)
-          .filter(Boolean)
+          .filter((badge) => badge && badge.name)
           .map((badge) => ({
             _id: badge._id,
             name: badge.name,
@@ -179,7 +179,7 @@ const getProfileSummary = async (req, res) => {
         completedCourses: user.completedCourses || [],
         badges: (user.badges || [])
           .map((entry) => entry.badge)
-          .filter(Boolean)
+          .filter((badge) => badge && badge.name)
           .map((badge) => ({
             _id: badge._id,
             name: badge.name,

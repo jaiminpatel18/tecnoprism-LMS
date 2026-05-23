@@ -1,23 +1,48 @@
 import { motion } from 'framer-motion';
-import { FiGift, FiStar, FiTarget, FiZap } from 'react-icons/fi';
+import { FiActivity, FiGift, FiGitBranch, FiStar, FiTarget, FiZap } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { ProgressBar, SectionHeading, SurfaceCard } from '../components/UiPrimitives';
 
-function Games() {
-  const quests = [
-    { title: 'Daily Sprint', detail: 'Complete one module today', xp: 60, progress: 65 },
-    { title: 'Collab Quest', detail: 'Comment on 2 team blogs', xp: 40, progress: 30 },
-    { title: 'Knowledge Rush', detail: 'Finish 3 lessons in 48h', xp: 120, progress: 52 },
-  ];
+const challenges = [
+  { title: 'RPA Debugging Sprint', detail: 'Fix three failing bot workflows with minimum retries.', xp: 90, progress: 58 },
+  { title: 'Prompt Engineering Duel', detail: 'Craft high-precision prompts for enterprise document extraction.', xp: 70, progress: 42 },
+  { title: 'Workflow Optimization Quest', detail: 'Reduce process latency by 20% in orchestration simulation.', xp: 120, progress: 64 },
+  { title: 'Agent Strategy Arena', detail: 'Design tool-using autonomous agents for incident response.', xp: 150, progress: 34 },
+];
 
+const gameModes = [
+  {
+    title: 'Drag-and-Drop Workflow Builder',
+    category: 'Automation Workflows',
+    icon: FiGitBranch,
+    detail: 'Build end-to-end enterprise automations using visual nodes and validation checkpoints.',
+  },
+  {
+    title: 'AI Prompt Challenge',
+    category: 'Generative AI',
+    icon: FiTarget,
+    detail: 'Compete on prompt quality, output reliability, and governance alignment.',
+  },
+  {
+    title: 'Bot-Building Simulation',
+    category: 'RPA',
+    icon: FiActivity,
+    detail: 'Assemble bot pipelines with exception handling, fallback logic, and monitoring.',
+  },
+];
+
+function Games() {
   return (
-    <Layout title="Games & Quests" subtitle="Gamified challenges, streaks, and reward loops inspired by modern learning apps.">
+    <Layout
+      title="Automation Games & Challenges"
+      subtitle="Gamified tracks focused on RPA logic, AI problem solving, workflow debugging, and autonomous operations."
+    >
       <div className="space-y-5">
         <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {[
-            { label: 'Current Level', value: '12', icon: FiStar },
-            { label: 'Quest Coins', value: '420', icon: FiGift },
-            { label: 'Daily Streak', value: '14 days', icon: FiZap },
+            { label: 'Automation Level', value: '18', icon: FiStar },
+            { label: 'Innovation Coins', value: '760', icon: FiGift },
+            { label: 'Experiment Streak', value: '21 days', icon: FiZap },
           ].map((item) => (
             <SurfaceCard key={item.label} className="rounded-2xl p-4">
               <item.icon className="text-indigo-500" />
@@ -28,14 +53,10 @@ function Games() {
         </section>
 
         <SurfaceCard className="rounded-2xl p-5">
-          <SectionHeading title="Active Challenges" subtitle="Finish tasks to unlock badges and XP bursts." />
+          <SectionHeading title="Active AI + Automation Challenges" subtitle="Complete practical challenge loops to unlock XP, badges, and ranking boosts." />
           <div className="space-y-4">
-            {quests.map((quest, idx) => (
-              <motion.div
-                key={quest.title}
-                whileHover={{ y: -2 }}
-                className="rounded-xl border border-indigo-100/70 p-4 dark:border-slate-700"
-              >
+            {challenges.map((quest, idx) => (
+              <motion.div key={quest.title} whileHover={{ y: -2 }} className="rounded-xl border border-indigo-100/70 p-4 dark:border-slate-700">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                     <FiTarget className="mr-1 inline text-indigo-500" />
@@ -46,8 +67,22 @@ function Games() {
                   </span>
                 </div>
                 <p className="mb-3 text-sm text-slate-500 dark:text-slate-400">{quest.detail}</p>
-                <ProgressBar value={quest.progress + idx * 4} color="from-amber-500 to-orange-500" />
+                <ProgressBar value={quest.progress + idx * 3} color="from-amber-500 to-orange-500" />
               </motion.div>
+            ))}
+          </div>
+        </SurfaceCard>
+
+        <SurfaceCard className="rounded-2xl p-5">
+          <SectionHeading title="Game Modes" subtitle="Simulation-first game formats built around enterprise automation use cases." />
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {gameModes.map((mode) => (
+              <div key={mode.title} className="rounded-xl border border-indigo-100/70 p-4 dark:border-slate-700">
+                <mode.icon className="text-indigo-500" />
+                <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{mode.title}</p>
+                <p className="mt-1 text-xs text-indigo-600 dark:text-indigo-300">{mode.category}</p>
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{mode.detail}</p>
+              </div>
             ))}
           </div>
         </SurfaceCard>

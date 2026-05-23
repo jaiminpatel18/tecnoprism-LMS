@@ -6,12 +6,14 @@ const User = require('../models/User');
 const getLeaderboard = async (req, res) => {
   try {
     const limit = Number(req.query.limit) || 10;
+    const department = req.query.department;
+    const query = department && department !== 'All' ? { department } : {};
     
     // Sort descending by xpPoints
-    const topUsers = await User.find({})
+    const topUsers = await User.find(query)
       .sort({ xpPoints: -1 })
       .limit(limit)
-      .select('firstName lastName profilePicture xpPoints currentStreak role');
+      .select('firstName lastName profilePicture xpPoints currentStreak role department');
 
     res.json({ success: true, data: topUsers });
   } catch (error) {

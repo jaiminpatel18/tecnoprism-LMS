@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FiBell, FiBookOpen, FiHome, FiUser, FiVideo } from 'react-icons/fi';
+import { FiBell, FiBookOpen, FiHome, FiTarget, FiUser, FiVideo } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import Sidebar from './Sidebar';
 import ThemeToggle from './ThemeToggle';
@@ -9,6 +9,7 @@ import ThemeToggle from './ThemeToggle';
 const mobileNav = [
   { label: 'Home', icon: FiHome, path: '/dashboard' },
   { label: 'Courses', icon: FiBookOpen, path: '/courses' },
+  { label: 'Paths', icon: FiTarget, path: '/career-paths' },
   { label: 'Sessions', icon: FiVideo, path: '/sessions' },
   { label: 'Alerts', icon: FiBell, path: '/notifications' },
   { label: 'Profile', icon: FiUser, path: '/profile' },

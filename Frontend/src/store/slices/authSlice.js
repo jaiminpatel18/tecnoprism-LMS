@@ -10,7 +10,13 @@ const getStoredAuth = () => {
     const rawUser = localStorage.getItem('user');
     const parsedUser = rawUser ? JSON.parse(rawUser) : null;
     const parsedToken = localStorage.getItem('token');
-    return { user: parsedUser, token: parsedToken || null };
+    const isTokenShapeValid = parsedToken && parsedToken.split('.').length === 3;
+    if (!isTokenShapeValid) {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      return { user: null, token: null };
+    }
+    return { user: parsedUser, token: parsedToken };
   } catch {
     try {
       localStorage.removeItem('user');
@@ -64,8 +70,12 @@ export const register = createAsyncThunk('auth/register', async (userData, thunk
 });
 
 export const logout = createAsyncThunk('auth/logout', async () => {
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
+  try {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+  } catch {
+    // Ignore storage errors during logout cleanup.
+  }
 });
 
 export const authSlice = createSlice({

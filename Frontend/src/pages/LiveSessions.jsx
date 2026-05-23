@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { format, formatDistanceToNowStrict } from 'date-fns';
-import { FiCalendar, FiClock, FiPlayCircle, FiUser, FiVideo } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiPlayCircle, FiStar, FiUser, FiVideo } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { EmptyState, SectionHeading, SkeletonGrid, SurfaceCard } from '../components/UiPrimitives';
 import { API_URL, authConfig } from '../utils/api';
@@ -12,7 +12,7 @@ import { API_URL, authConfig } from '../utils/api';
 function LiveSessions() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [department, setDepartment] = useState('All');
+  const [domain, setDomain] = useState('All');
   const { token, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
@@ -31,12 +31,26 @@ function LiveSessions() {
     fetchSessions();
   }, [token]);
 
-  const departments = useMemo(() => ['All', 'Engineering', 'Product', 'Design', 'Data'], []);
+  const domains = useMemo(
+    () => [
+      'All',
+      'RPA',
+      'Agentic AI',
+      'AI Automation',
+      'Intelligent Workflows',
+      'Generative AI',
+      'Workflow Orchestration',
+    ],
+    [],
+  );
 
-  const filteredSessions =
-    department === 'All' ? sessions : sessions.filter((session) => (session.department || 'Engineering') === department);
+  const filteredSessions = domain === 'All' ? sessions : sessions.filter((session) => session.domain === domain);
 
-  const isRegistered = (session) => Boolean(user?._id && session.attendees?.includes(user._id));
+  const isRegistered = (session) =>
+    Boolean(
+      user?._id &&
+        (session.attendees || []).some((entry) => String(entry?._id || entry) === String(user._id)),
+    );
 
   const handleRegister = async (sessionId) => {
     try {
@@ -52,23 +66,26 @@ function LiveSessions() {
   };
 
   return (
-    <Layout title="Expert Sessions" subtitle="Join live discussions, AMAs, and mentorship sessions with domain experts.">
+    <Layout
+      title="Expert Sessions"
+      subtitle="Join AI + automation live sessions with internal experts, real-time Q&A, recordings, and rewards."
+    >
       <div className="space-y-5">
         <SurfaceCard className="rounded-2xl p-5">
-          <SectionHeading title="Session Calendar" subtitle="Interactive sessions with countdown timers and join-ready controls." />
+          <SectionHeading title="Session Calendar" subtitle="Track by automation domain and join sessions built for enterprise use cases." />
           <div className="flex flex-wrap gap-2">
-            {departments.map((dept) => (
+            {domains.map((item) => (
               <button
-                key={dept}
+                key={item}
                 type="button"
-                onClick={() => setDepartment(dept)}
+                onClick={() => setDomain(item)}
                 className={`rounded-full px-4 py-2 text-sm transition ${
-                  department === dept
+                  domain === item
                     ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
                     : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-slate-800 dark:text-indigo-300'
                 }`}
               >
-                {dept}
+                {item}
               </button>
             ))}
           </div>
@@ -77,13 +94,13 @@ function LiveSessions() {
         {loading ? (
           <SkeletonGrid />
         ) : filteredSessions.length === 0 ? (
-          <EmptyState
-            icon={FiVideo}
-            title="No expert sessions scheduled"
-            description="There are no sessions for this department right now. Check another filter or come back soon."
-          />
-        ) : (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <EmptyState
+              icon={FiVideo}
+              title="No expert sessions scheduled"
+              description="There are no sessions for this domain right now. Try another filter or check back soon."
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {filteredSessions.map((session, idx) => {
               const live = session.status === 'Live';
               const registered = isRegistered(session);
@@ -99,7 +116,7 @@ function LiveSessions() {
                   <div className="p-5">
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                       <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-slate-800 dark:text-indigo-300">
-                        {(session.tags && session.tags[0]) || session.department || 'Learning'}
+                        {session.domain || (session.tags && session.tags[0]) || 'AI Automation'}
                       </span>
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -114,6 +131,19 @@ function LiveSessions() {
 
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{session.title}</h3>
                     <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{session.description}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        {session.sessionType || 'Live Workshop'}
+                      </span>
+                      {(session.technologies || []).slice(0, 2).map((tech) => (
+                        <span
+                          key={`${session._id}-${tech}`}
+                          className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
 
                     <div className="mt-4 grid grid-cols-1 gap-2 text-sm text-slate-600 dark:text-slate-300">
                       <p className="inline-flex items-center gap-2">
@@ -125,10 +155,15 @@ function LiveSessions() {
                       <p className="inline-flex items-center gap-2">
                         <FiUser /> {session.expert?.firstName} {session.expert?.lastName}
                       </p>
+                      <p className="inline-flex items-center gap-2">
+                        <FiStar /> {session.averageRating || 0}/5 rating • {(session.feedbacks || []).length} feedback
+                      </p>
                     </div>
 
                     <div className="mt-5 flex items-center justify-between border-t border-indigo-100/70 pt-4 dark:border-slate-700">
-                      <span className="text-xs text-slate-500 dark:text-slate-400">{session.attendees?.length || 0} attending</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {session.attendees?.length || 0}/{session.maxAttendees || 100} attending
+                      </span>
                       {registered ? (
                         <button
                           type="button"
@@ -148,6 +183,11 @@ function LiveSessions() {
                         </button>
                       )}
                     </div>
+                    {session.recordingUrl ? (
+                      <p className="mt-3 text-xs text-emerald-600 dark:text-emerald-300">
+                        Recording available for this session.
+                      </p>
+                    ) : null}
                   </div>
                 </motion.article>
               );
